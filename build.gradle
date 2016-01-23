@@ -6,6 +6,9 @@ apply plugin: 'eclipse'
 
 apply plugin: 'wrapper'
 
+jar.baseName = 'dyvil-gradle'
+version = '0.1'
+
 dependencies {
 	compile gradleApi()
 	compile localGroovy()
@@ -18,4 +21,3 @@ sourceSets {
 		}
 	}
 }
-
