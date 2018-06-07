@@ -1,12 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-
 apply plugin: 'wrapper'
 
-jar.baseName = 'dyvil-gradle'
+group = 'org.dyvil'
+jar.baseName = 'dyvil-gradle-plugin'
 version = '0.1'
 
 dependencies {
@@ -14,8 +12,13 @@ dependencies {
 	compile localGroovy()
 }
 
+wrapper.distributionType = Wrapper.DistributionType.ALL
+
 sourceSets {
 	main {
+		java {
+			srcDir 'src/main/java'
+		}
 		groovy {
 			srcDir 'src/main/groovy'
 		}
