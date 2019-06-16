@@ -5,6 +5,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Test
 
+import static org.hamcrest.CoreMatchers.hasItem
 import static org.hamcrest.CoreMatchers.notNullValue
 import static org.junit.Assert.assertThat
 
@@ -33,5 +34,11 @@ class DyvilPluginTest {
 	void addsCompileTasks() {
 		assertThat(project.tasks.compileDyvil, notNullValue())
 		assertThat(project.tasks.compileTestDyvil, notNullValue())
+	}
+
+	@Test
+	void addsTaskDependencies() {
+		assertThat(project.tasks.classes.dependsOn, hasItem('compileDyvil'))
+		assertThat(project.tasks.testClasses.dependsOn, hasItem('compileTestDyvil'))
 	}
 }

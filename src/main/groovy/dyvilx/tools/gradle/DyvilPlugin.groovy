@@ -5,6 +5,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.plugins.JavaPlugin
@@ -59,5 +60,10 @@ class DyvilPlugin implements Plugin<Project> {
 			it.inputs.files directoryDelegate.dyvil
 			it.outputs.files project.fileTree(outputDir).include("**/*.class", "**/*.dyo")
 		} as Action<JavaExec>)
+
+		// 3) make the classes task depend on our compile task
+		project.tasks.named(sourceSet.classesTaskName) { Task it ->
+			it.dependsOn taskName
+		}
 	}
 }
