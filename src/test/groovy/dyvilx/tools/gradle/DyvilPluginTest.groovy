@@ -22,4 +22,10 @@ class DyvilPluginTest {
 		assertThat(project.configurations.dyvilc, notNullValue())
 		assertThat(project.configurations.gensrc, notNullValue())
 	}
+
+	@Test
+	void addsSourceSets() {
+		assertThat(project.sourceSets.main.dyvil, notNullValue())
+		assertThat(project.sourceSets.test.dyvil, notNullValue())
+	}
 }
