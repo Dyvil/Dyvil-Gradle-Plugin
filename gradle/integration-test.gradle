@@ -1,0 +1,21 @@
+// https://github.com/gradle-guides/testing-gradle-plugins/blob/master/samples/code/url-verifier-plugin/gradle
+// /integration-test.gradle
+
+sourceSets {
+	integrationTest {
+		groovy.srcDir file('src/integrationTest/groovy')
+		resources.srcDir file('src/integrationTest/resources')
+		compileClasspath += sourceSets.main.output + configurations.testRuntime
+		runtimeClasspath += output + compileClasspath
+	}
+}
+
+tasks.register('integrationTest', Test) {
+	description = 'Runs the integration tests.'
+	group = 'verification'
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	mustRunAfter 'test'
+}
+
+check.dependsOn 'integrationTest'

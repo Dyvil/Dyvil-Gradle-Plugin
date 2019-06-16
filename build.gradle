@@ -1,26 +1,53 @@
-apply plugin: 'java'
-apply plugin: 'groovy'
-
-apply plugin: 'wrapper'
-
-group = 'org.dyvil'
-jar.baseName = 'dyvil-gradle-plugin'
-version = '0.1'
-
-dependencies {
-	compile gradleApi()
-	compile localGroovy()
+plugins {
+	id 'java-gradle-plugin'
+	id 'groovy'
+	id 'com.gradle.plugin-publish' version '0.10.1'
 }
 
-wrapper.distributionType = Wrapper.DistributionType.ALL
+apply from: 'gradle/integration-test.gradle'
+apply from: 'gradle/functional-test.gradle'
 
-sourceSets {
-	main {
-		java {
-			srcDir 'src/main/java'
+group 'org.dyvil'
+version '0.1.0'
+description 'The Dyvil Gradle Plugin.'
+
+pluginBundle {
+	website = 'https://github.com/Dyvil/Dyvil-Gradle-Plugin'
+	vcsUrl = 'https://github.com/Dyvil/Dyvil-Gradle-Plugin'
+	description = project.description
+	tags = [ 'dyvil', 'compiler', 'gensrc' ]
+
+	plugins {
+		dyvilPlugin {
+			displayName = 'Dyvil'
 		}
-		groovy {
-			srcDir 'src/main/groovy'
+	}
+
+	mavenCoordinates {
+		groupId = project.group
+		artifactId = project.name
+		version = project.version
+	}
+}
+
+gradlePlugin {
+	plugins {
+		dyvilPlugin {
+			id = "${ project.group }.$project.name"
+			implementationClass = 'dyvilx.tools.gradle.DyvilPlugin'
 		}
+	}
+}
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+	// https://mvnrepository.com/artifact/junit/junit
+	testCompile group: 'junit', name: 'junit', version: '4.12'
+
+	testCompile(group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4') {
+		exclude group: 'org.codehaus.groovy'
 	}
 }
