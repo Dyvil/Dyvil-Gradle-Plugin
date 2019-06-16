@@ -28,4 +28,10 @@ class DyvilPluginTest {
 		assertThat(project.sourceSets.main.dyvil, notNullValue())
 		assertThat(project.sourceSets.test.dyvil, notNullValue())
 	}
+
+	@Test
+	void addsCompileTasks() {
+		assertThat(project.tasks.compileDyvil, notNullValue())
+		assertThat(project.tasks.compileTestDyvil, notNullValue())
+	}
 }
