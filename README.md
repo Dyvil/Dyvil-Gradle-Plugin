@@ -13,9 +13,9 @@ and wires everything up to work properly with other languages and build tasks.
 In addition to Dyvil compiler support, the plugin allows you to use GenSrc in your project.
 It adds tasks that invoke the GenSrc compiler on your Java and Dyvil source directories (`compileJavaGenSrc`, `compileTestJavaGenSrc`, `compileDyvilGenSrc`, and `compileTestDyvilGenSrc`) and ensures they run before any compilation takes place.
 
-## Installation
+## Setup
 
-Add the following snippet to your `build.gradle` to enable the plugin:
+To enable the plugin, add the following line to the `plugins` DSL block of your `build.gradle`:
 
 ```groovy
 plugins {
@@ -24,7 +24,17 @@ plugins {
 }
 ```
 
-Configure the Dyvil compiler and GenSrc versions in the `dependencies` DSL block:
+The plugin requires the Dyvil compiler and GenSrc artifacts, which are located on the JCenter repository.
+As such, we need to tell Gradle to use it:
+
+```groovy
+repositories {
+	// ...
+	jcenter()
+}
+```
+
+Configure the tool versions in the `dependencies` DSL block:
 
 ```groovy
 dependencies {
@@ -40,7 +50,5 @@ dependencies {
 }
 ```
 
-## Examples
-
-See the [Dyvil Property Format repository](https://github.com/Dyvil/Dyvil-Property-Format) for an example on how to use the plugin.
+See [build.gradle](https://github.com/Dyvil/Dyvil-Property-Format/blob/master/build.gradle) in the Dyvil Property Format repository for a complete example on how to use the plugin.
 It makes use of both the Dyvil and GenSrc compiler, with minimal build configuration.
