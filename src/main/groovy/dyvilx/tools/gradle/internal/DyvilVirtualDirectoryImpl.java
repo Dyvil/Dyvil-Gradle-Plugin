@@ -17,9 +17,8 @@ public class DyvilVirtualDirectoryImpl implements DyvilVirtualDirectory, HasPubl
 
 	public DyvilVirtualDirectoryImpl(SourceSet parent, ObjectFactory objectFactory)
 	{
-		final String name = parent.getName() + ".dyvil";
 		final String displayName = ((DefaultSourceSet) parent).getDisplayName() + " Dyvil source";
-		this.dyvil = objectFactory.sourceDirectorySet(name, displayName);
+		this.dyvil = objectFactory.sourceDirectorySet(DyvilVirtualDirectory.NAME, displayName);
 		this.dyvil.getFilter().include("**/*.dyv", "**/*.dyh", "**/*.dyvil", "**/*.dyvilh");
 	}
 
