@@ -63,8 +63,8 @@ class DyvilPlugin implements Plugin<Project> {
 			it.classpath = it.project.configurations.getByName('dyvilc')
 			it.main = 'dyvilx.tools.compiler.Main'
 
-			it.args "source_dirs=$srcDirName"
-			it.args "libraries=${ sourceSet.compileClasspath.join(":") }"
+			it.args "source_dirs=${ inputFiles.srcDirs.join(':') }"
+			it.args "libraries=${ sourceSet.compileClasspath.join(':') }"
 			it.args "output_dir=$outputDirName"
 			it.args 'compile', '--ansi', '--machine-markers'
 
@@ -74,6 +74,37 @@ class DyvilPlugin implements Plugin<Project> {
 
 		// 3) make the classes task depend on our compile task
 		project.tasks.named(sourceSet.classesTaskName) { Task it ->
+			it.dependsOn taskName
+		}
+
+		// 4) configure gensrc for each source directory set (only java and dyvil, for now)
+		configureGenSrc(project, sourceSet, sourceSet.java)
+		configureGenSrc(project, sourceSet, inputFiles)
+	}
+
+	static void configureGenSrc(Project project, SourceSet sourceSet, SourceDirectorySet sourceDirSet) {
+		final String languageName = sourceDirSet.name
+		final String taskName = sourceSet.getCompileTaskName("${ languageName }GenSrc")
+		final String outputDir = "$project.buildDir/generated-src/gensrc/$sourceSet.name/$languageName"
+
+		project.tasks.register(taskName, JavaExec, { JavaExec it ->
+			it.classpath = it.project.configurations.getByName('gensrc')
+			it.main = 'dyvilx.tools.gensrc.Main'
+
+			it.args "source_dirs=${ sourceDirSet.srcDirs.join(':') }"
+			it.args "output_dir=$it.temporaryDir/classes"
+			it.args "gensrc_dir=$outputDir"
+			it.args 'compile', 'test', '--ansi', '--machine-markers' // TODO maybe run using gradle
+
+			it.inputs.files sourceDirSet.srcDirs.collect {
+				project.fileTree(it).include('**/*.dgt', '**/*.dgt', '**/*.dgc')
+			}
+			it.outputs.dir(outputDir)
+		} as Action<JavaExec>)
+
+		sourceDirSet.srcDir project.files(outputDir).builtBy(taskName)
+
+		project.tasks.named(sourceSet.getCompileTaskName(languageName)) { Task it ->
 			it.dependsOn taskName
 		}
 	}
