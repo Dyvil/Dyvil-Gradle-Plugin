@@ -1,0 +1,25 @@
+package org.example
+
+import org.junit.Assert
+import org.junit.Test
+
+class FooTest {
+	@Test func getText() {
+		let foo = new Foo
+		Assert.assertEquals("Hello World", foo.getText())
+	}
+
+	@Test func getABC() {
+		let bar = new Bar
+		Assert.assertEquals("A", bar.getA())
+		Assert.assertEquals("B", bar.getB())
+		Assert.assertEquals("C", bar.getC())
+	}
+
+	@Test func getDEF() {
+		let jav = new Jav
+		Assert.assertEquals("D", jav.getD())
+		Assert.assertEquals("E", jav.getE())
+		Assert.assertEquals("F", jav.getF())
+	}
+}

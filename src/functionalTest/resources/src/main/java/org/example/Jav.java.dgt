@@ -1,0 +1,9 @@
+package org.example;
+
+class Jav {
+	#for(S <- [ "D", "E", "F"]) {
+		String get#(S)() {
+			return "S";
+		}
+	}
+}

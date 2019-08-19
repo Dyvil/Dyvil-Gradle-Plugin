@@ -1,115 +1,59 @@
 package dyvilx.tools.gradle
 
 import groovy.io.FileType
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
+@CompileStatic
 class FunctionalTest extends Specification {
+	static final String TEST_FILES_ROOT = 'src/functionalTest/resources'
+	static final String[] TEST_FILES = [
+			'build.gradle',
+			'settings.gradle',
+			'src/main/dyvil/org/example/Foo.dyv',
+			'src/main/dyvil/org/example/Bar.dyv.dgt',
+			'src/main/java/org/example/Jav.java.dgt',
+			'src/test/dyvil/org/example/FooTest.dyv',
+	]
+
 	@Rule
 	TemporaryFolder testProjectDir = new TemporaryFolder()
 
-	def setup() {
-		testProjectDir.newFile('settings.gradle') << /* language=Groovy */ """
-		rootProject.name = 'test'
-		"""
+	void setup() {
+		final Path rootPath = testProjectDir.root.toPath()
+		for (final String fileName : TEST_FILES) {
+			final Path source = Paths.get(TEST_FILES_ROOT, fileName)
+			final Path target = rootPath.resolve(fileName)
 
-		testProjectDir.newFile('build.gradle') << /* language=Groovy */ """
-		plugins {
-			id 'java'
-			id 'org.dyvil.dyvil-gradle'
-		}
-		
-		repositories {
-			jcenter()
-		}
-		
-		dependencies {
-			dyvilc group: 'org.dyvil', name: 'compiler', version: '0.45.0'
-			gensrc group: 'org.dyvil', name: 'gensrc', version: '0.9.6'
-			
-			// https://mvnrepository.com/artifact/junit/junit
-			testCompile group: 'junit', name: 'junit', version: '4.12'
-		}
-		"""
+			Files.createDirectories(target.parent)
 
-		testProjectDir.newFolder('src', 'main', 'dyvil', 'org', 'example')
-		testProjectDir.newFile('src/main/dyvil/org/example/Foo.dyv') << /* language=dyvil */ """
-		package org.example
-		
-		class Foo {
-			func getText() -> String = "Hello World"
-		}
-		"""
-
-		testProjectDir.newFile('src/main/dyvil/org/example/Bar.dyv.dgt') << /* language=dyvil */ """
-		package org.example
-		
-		class Bar {
-			#for(S <- [ "A", "B", "C" ]) {
-				func get#(S)() -> String = "S"
+			try {
+				Files.createLink(target, source)
+			}
+			catch (UnsupportedOperationException ignored) {
+				Files.copy(source, target)
 			}
 		}
-		"""
-
-		testProjectDir.newFolder('src', 'main', 'java', 'org', 'example')
-		testProjectDir.newFile('src/main/java/org/example/Jav.java.dgt') << /* language=dyvil */ """
-		package org.example;
-		
-		class Jav {
-			#for(S <- [ "D", "E", "F"]) {
-				String get#(S)() {
-					return "S";
-				}
-			}
-		}
-		"""
-
-		testProjectDir.newFolder('src', 'test', 'dyvil', 'org', 'example')
-		testProjectDir.newFile('src/test/dyvil/org/example/FooTest.dyv') << /* language=dyvil */ """
-		package org.example
-		
-		import org.junit.Assert
-		import org.junit.Test
-		
-		class FooTest {
-			@Test func getText() {
-				let foo = new Foo
-				Assert.assertEquals("Hello World", foo.getText())
-			}
-			
-			@Test func getABC() {
-				let bar = new Bar
-				Assert.assertEquals("A", bar.getA())
-				Assert.assertEquals("B", bar.getB())
-				Assert.assertEquals("C", bar.getC())
-			}
-			
-			@Test func getDEF() {
-				let jav = new Jav
-				Assert.assertEquals("D", jav.getD())
-				Assert.assertEquals("E", jav.getE())
-				Assert.assertEquals("F", jav.getF())
-			}
-		}
-		"""
 	}
 
-	BuildResult run() {
+	BuildResult run(GradleRunner runner) {
 		try {
-			BuildResult result = GradleRunner.create()
-					.withProjectDir(testProjectDir.root)
-					.withArguments('check')
-					.withPluginClasspath()
-					.build()
+			final BuildResult result = runner.withProjectDir(testProjectDir.root).withPluginClasspath().build()
 
-			println "-" * 30 + ' Gradle Output ' + "-" * 30
+			println "-" * 30 + " Gradle Output " + "-" * 30
 			println result.output
-			println "-" * 30 + ' Project Files ' + "-" * 30
+			println "-" * 30 + " Project Files " + "-" * 30
 			return result
 		}
 		finally {
@@ -120,9 +64,10 @@ class FunctionalTest extends Specification {
 		}
 	}
 
+	@CompileDynamic
 	def generatesClasses() {
 		when:
-		def result = run()
+		def result = run(GradleRunner.create().withArguments('check'))
 
 		then:
 		result.task(":check").outcome == SUCCESS

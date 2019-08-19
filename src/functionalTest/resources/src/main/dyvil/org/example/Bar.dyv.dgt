@@ -1,0 +1,7 @@
+package org.example
+
+class Bar {
+	#for(S <- [ "A", "B", "C" ]) {
+		func get#(S)() -> String = "S"
+	}
+}
