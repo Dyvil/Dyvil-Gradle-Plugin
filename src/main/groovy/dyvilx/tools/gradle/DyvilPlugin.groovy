@@ -6,7 +6,6 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.internal.plugins.DslObject
@@ -23,8 +22,8 @@ class DyvilPlugin implements Plugin<Project> {
 		project.pluginManager.apply(JavaPlugin)
 
 		// configurations
-		final Configuration dyvilc = project.configurations.create('dyvilc')
-		final Configuration gensrc = project.configurations.create('gensrc')
+		project.configurations.register('dyvilc')
+		project.configurations.register('gensrc')
 
 		project.convention.getPlugin(JavaPluginConvention).sourceSets.each {
 			configureSourceSet(project, it)
