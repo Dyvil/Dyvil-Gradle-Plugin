@@ -35,11 +35,11 @@ class DyvilPlugin implements Plugin<Project> {
 	}
 
 	static void configureSourceSet(Project project, SourceSet sourceSet) {
+		final String srcDirName = "src/$sourceSet.name/dyvil"
+		final File outputDir = project.file("$project.buildDir/classes/dyvil/$sourceSet.name/")
+
 		// for each source set we will:
 		// 1) create a new virtual directory mapping
-
-		final String srcDirName = "src/$sourceSet.name/dyvil"
-		final File srcDir = project.file(srcDirName)
 
 		final DyvilVirtualDirectoryImpl directoryDelegate = new DyvilVirtualDirectoryImpl(sourceSet, project.objects)
 		final SourceDirectorySet inputFiles = directoryDelegate.dyvil
@@ -47,20 +47,9 @@ class DyvilPlugin implements Plugin<Project> {
 
 		new DslObject(sourceSet).convention.plugins.put(DyvilVirtualDirectory.NAME, directoryDelegate)
 
-		sourceSet.allSource.source(inputFiles)
-
 		// 2) create a dyvil compile task
 
 		final String taskName = sourceSet.getCompileTaskName("dyvil")
-		final String outputDirName = "$project.buildDir/classes/dyvil/$sourceSet.name/"
-		final File outputDir = project.file(outputDirName)
-		final ConfigurableFileTree outputFiles = project.fileTree(outputDir)
-
-		inputFiles.setOutputDir(outputDir)
-		outputFiles.include("**/*.class", "**/*.dyo")
-		outputFiles.builtBy taskName
-
-		((DefaultSourceSetOutput) sourceSet.output).addClassesDir { outputDir }
 
 		project.tasks.register(taskName, DyvilCompileTask, { DyvilCompileTask it ->
 			it.description = "Compiles the $sourceSet.name Dyvil code."
@@ -72,12 +61,23 @@ class DyvilPlugin implements Plugin<Project> {
 			it.source = directoryDelegate.dyvil
 		} as Action<DyvilCompileTask>)
 
-		// 3) make the classes task depend on our compile task
+		// 4) wire up inputs and outputs and task dependencies
+
+		final ConfigurableFileTree outputFiles = project.fileTree(outputDir)
+
+		inputFiles.outputDir = outputDir
+		outputFiles.include("**/*.class", "**/*.dyo")
+		outputFiles.builtBy taskName
+
+		((DefaultSourceSetOutput) sourceSet.output).addClassesDir { outputDir }
+
+		sourceSet.allSource.source(inputFiles)
+
 		project.tasks.named(sourceSet.classesTaskName) { Task it ->
 			it.dependsOn taskName
 		}
 
-		// 4) configure gensrc for each source directory set (only java and dyvil, for now)
+		// 5) configure gensrc for each source directory set (only java and dyvil, for now)
 		configureGenSrc(project, sourceSet, sourceSet.java)
 		configureGenSrc(project, sourceSet, inputFiles)
 	}
