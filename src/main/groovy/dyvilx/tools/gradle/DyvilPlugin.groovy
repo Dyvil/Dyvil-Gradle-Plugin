@@ -6,17 +6,21 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.internal.plugins.DslObject
 import org.gradle.api.internal.tasks.DefaultSourceSetOutput
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 
 @CompileStatic
 class DyvilPlugin implements Plugin<Project> {
+
+	public static final String DYVILC_MAIN = 'dyvilx.tools.compiler.Main'
+	public static final String GENSRC_MAIN = 'dyvilx.tools.gensrc.Main'
+
 	@Override
 	void apply(Project project) {
 		project.pluginManager.apply(JavaPlugin)
@@ -58,18 +62,15 @@ class DyvilPlugin implements Plugin<Project> {
 
 		((DefaultSourceSetOutput) sourceSet.output).addClassesDir { outputDir }
 
-		project.tasks.register(taskName, JavaExec, { JavaExec it ->
-			it.classpath = it.project.configurations.getByName('dyvilc')
-			it.main = 'dyvilx.tools.compiler.Main'
+		project.tasks.register(taskName, DyvilCompileTask, { DyvilCompileTask it ->
+			it.description = "Compiles the $sourceSet.name Dyvil code."
 
-			it.args "source_dirs=${ inputFiles.srcDirs.join(':') }"
-			it.args "libraries=${ sourceSet.compileClasspath.join(':') }"
-			it.args "output_dir=$outputDirName"
-			it.args 'compile', '--ansi', '--machine-markers'
-
-			it.inputs.files inputFiles
-			it.outputs.files outputFiles
-		} as Action<JavaExec>)
+			// 3) set up convention mapping for default sources (allows user to not have to specify)
+			it.classpath = sourceSet.compileClasspath
+			it.dyvilcClasspath = project.configurations.getByName('dyvilc')
+			it.destinationDir = outputDir
+			it.source = directoryDelegate.dyvil
+		} as Action<DyvilCompileTask>)
 
 		// 3) make the classes task depend on our compile task
 		project.tasks.named(sourceSet.classesTaskName) { Task it ->
@@ -84,22 +85,18 @@ class DyvilPlugin implements Plugin<Project> {
 	static void configureGenSrc(Project project, SourceSet sourceSet, SourceDirectorySet sourceDirSet) {
 		final String languageName = sourceDirSet.name
 		final String taskName = sourceSet.getCompileTaskName("${ languageName }GenSrc")
-		final String outputDir = "$project.buildDir/generated-src/gensrc/$sourceSet.name/$languageName"
+		final File outputDir = project.file("$project.buildDir/generated-src/gensrc/$sourceSet.name/$languageName")
 
-		project.tasks.register(taskName, JavaExec, { JavaExec it ->
-			it.classpath = it.project.configurations.getByName('gensrc')
-			it.main = 'dyvilx.tools.gensrc.Main'
+		project.tasks.register(taskName, GenSrcTask, { GenSrcTask it ->
+			it.description = "Processes the $sourceSet.name GenSrc files."
 
-			it.args "source_dirs=${ sourceDirSet.srcDirs.join(':') }"
-			it.args "output_dir=$it.temporaryDir/classes"
-			it.args "gensrc_dir=$outputDir"
-			it.args 'compile', 'test', '--ansi', '--machine-markers' // TODO maybe run using gradle
+			final Configuration gensrc = project.configurations.getByName('gensrc')
+			it.classpath = gensrc
+			it.dyvilcClasspath = gensrc
 
-			it.inputs.files sourceDirSet.srcDirs.collect {
-				project.fileTree(it).include('**/*.dgt', '**/*.dgt', '**/*.dgc')
-			}
-			it.outputs.dir(outputDir)
-		} as Action<JavaExec>)
+			it.destinationDir = outputDir
+			it.source = sourceDirSet
+		} as Action<GenSrcTask>)
 
 		sourceDirSet.srcDir project.files(outputDir).builtBy(taskName)
 

@@ -8,6 +8,7 @@ repositories {
 }
 
 dependencies {
+	compile group: 'org.dyvil', name: 'library', version: '0.45.0'
 	dyvilc group: 'org.dyvil', name: 'compiler', version: '0.45.0'
 	gensrc group: 'org.dyvil', name: 'gensrc', version: '0.9.6'
 
