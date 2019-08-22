@@ -8,7 +8,7 @@ apply from: 'gradle/integration-test.gradle'
 apply from: 'gradle/functional-test.gradle'
 
 group 'org.dyvil'
-version '0.2.0'
+version 'git describe --tags'.execute().text[1..-2] // strip v and \n
 description 'The Dyvil Gradle Plugin.'
 
 pluginBundle {
