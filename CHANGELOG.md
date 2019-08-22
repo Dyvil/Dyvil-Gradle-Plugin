@@ -10,3 +10,7 @@
 + The plugin now adds the `compile{,Test}{Java,Dyvil}GenSrc` tasks. #1
 + The plugin now registers GenSrc task output directories as source directories. #1
 + The plugin now registers task dependencies on GenSrc tasks for compile tasks. #1
+
+# Dyvil Gradle Plugin v0.3.0
+
++ Added custom `Task` subclasses for Dyvil Compile and GenSrc tasks. #2
