@@ -128,29 +128,28 @@ public class DyvilCompileTask extends AbstractCompile
 
 		spec.args(this.getExtraArgs());
 
-		// TODO the compiler has this hardcoded. should probably use File.pathSeparator here and there.
-		final String pathSeparator = ":";
+		final String pathSeparator = File.pathSeparator;
 		final File workingDir = spec.getWorkingDir();
 
-		spec.args("source_dirs=" + this.sourceDirs.getSrcDirs().stream()
-		                                          .map(f -> RelativePathUtil.relativePath(workingDir, f))
-		                                          .collect(Collectors.joining(pathSeparator)));
-		spec.args("output_dir=" + this.getDestinationDir());
-		spec.args("libraries=" + this.getClasspath().getFiles().stream().map(File::getPath)
-		                             .collect(Collectors.joining(pathSeparator)));
+		spec.args("--source-dirs=" + this.sourceDirs.getSrcDirs().stream()
+		                                            .map(f -> RelativePathUtil.relativePath(workingDir, f))
+		                                            .collect(Collectors.joining(pathSeparator)));
+		spec.args("--output-dir=" + this.getDestinationDir());
+		spec.args("--classpath=" + this.getClasspath().getFiles().stream().map(File::getPath)
+		                               .collect(Collectors.joining(pathSeparator)));
 
 		final PatternFilterable filter = this.getPatternSet();
 		final Set<String> includes = filter.getIncludes();
 		final Set<String> excludes = filter.getExcludes();
 		if (!includes.isEmpty())
 		{
-			spec.args("includes=" + String.join(pathSeparator, includes));
+			spec.args("--include-patterns=" + String.join(pathSeparator, includes));
 		}
 		if (!excludes.isEmpty())
 		{
-			spec.args("excludes=" + String.join(pathSeparator, excludes));
+			spec.args("--exclude-patterns=" + String.join(pathSeparator, excludes));
 		}
 
-		spec.args("compile", "--ansi", "--machine-markers");
+		spec.args("compile", "--ansi", "--marker-style=machine");
 	}
 }

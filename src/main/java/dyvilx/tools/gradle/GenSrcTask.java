@@ -37,8 +37,8 @@ public class GenSrcTask extends DyvilCompileTask
 
 		spec.setMain(DyvilPlugin.GENSRC_MAIN);
 
-		spec.args("output_dir=" + this.getTemporaryDir() + File.separatorChar + "classes");
-		spec.args("gensrc_dir=" + this.getDestinationDir());
+		spec.args("--output-dir=" + this.getTemporaryDir() + File.separatorChar + "classes");
+		spec.args("--gensrc-dir=" + this.getDestinationDir());
 		spec.args("test"); // TODO maybe run using gradle
 	}
 }
