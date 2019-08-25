@@ -4,6 +4,7 @@ import dyvilx.tools.gradle.internal.DyvilVirtualDirectoryImpl;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.DependencyResolveDetails;
 import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.plugins.DslObject;
@@ -25,12 +26,95 @@ class DyvilPlugin implements Plugin<Project>
 		project.getPluginManager().apply(JavaPlugin.class);
 
 		// configurations
-		project.getConfigurations().register("dyvilc");
-		project.getConfigurations().register("gensrc");
+		project.getConfigurations().register("dyvilc", it -> {
+			it.setDescription("The Dyvil Compiler binaries to use for this project.");
+			it.setVisible(false);
+
+			it.getResolutionStrategy().eachDependency(this::checkCompilerVersion);
+		});
+
+		project.getConfigurations().register("gensrc", it -> {
+			it.setDescription("The GenSrc binaries to use for this project.");
+			it.setVisible(false);
+
+			it.getResolutionStrategy().eachDependency(this::checkGenSrcVersion);
+		});
 
 		for (final SourceSet sourceSet : project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets())
 		{
 			configureSourceSet(project, sourceSet);
+		}
+	}
+
+	private void checkCompilerVersion(DependencyResolveDetails details)
+	{
+		if (!"org.dyvil".equals(details.getRequested().getGroup()) //
+		    || !"compiler".equals(details.getRequested().getName()))
+		{
+			return;
+		}
+
+		final String version = details.getRequested().getVersion();
+		if (version == null)
+		{
+			details.because("latest version").useVersion("+");
+			return;
+		}
+
+		final String[] split = version.split("\\.");
+		try
+		{
+			final int major = Integer.parseInt(split[0]);
+			final int minor = Integer.parseInt(split[1]);
+			final int patch = Integer.parseInt(split[2]);
+
+			if (major == 0 && (minor < 46 || minor == 46 && patch < 3))
+			{
+				details.because(
+					"Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin")
+				       .useVersion("0.46.3");
+			}
+		}
+		catch (Exception ignored)
+		{
+			// invalid version notation, let gradle handle it.
+		}
+	}
+
+	private void checkGenSrcVersion(DependencyResolveDetails details)
+	{
+		this.checkCompilerVersion(details);
+
+		if (!"org.dyvil".equals(details.getRequested().getGroup()) //
+		    || !"gensrc".equals(details.getRequested().getName()))
+		{
+			return;
+		}
+
+		final String version = details.getRequested().getVersion();
+		if (version == null)
+		{
+			details.because("latest version").useVersion("+");
+			return;
+		}
+
+		final String[] split = version.split("\\.");
+		try
+		{
+			final int major = Integer.parseInt(split[0]);
+			final int minor = Integer.parseInt(split[1]);
+			final int patch = Integer.parseInt(split[2]);
+
+			if (major == 0 && (minor < 10 || minor == 10 && patch < 1))
+			{
+				details.because(
+					"GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin")
+				       .useVersion("0.10.1");
+			}
+		}
+		catch (Exception ignored)
+		{
+			// invalid version notation, let gradle handle it.
 		}
 	}
 
