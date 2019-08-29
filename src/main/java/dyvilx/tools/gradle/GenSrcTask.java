@@ -11,7 +11,7 @@ public class GenSrcTask extends DyvilCompileTask
 {
 	public GenSrcTask()
 	{
-		this.include("**/*.dgt", "**/*.dgt", "**/*.dgc");
+		this.include("**/*.dgt", "**/*.dgt", "**/*.dgc", "**/*.dgs");
 	}
 
 	@Override
