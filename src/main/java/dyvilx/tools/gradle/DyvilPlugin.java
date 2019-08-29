@@ -1,6 +1,7 @@
 package dyvilx.tools.gradle;
 
 import dyvilx.tools.gradle.internal.DyvilVirtualDirectoryImpl;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -11,6 +12,7 @@ import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.internal.tasks.DefaultSourceSetOutput;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
@@ -24,6 +26,9 @@ class DyvilPlugin implements Plugin<Project>
 	public void apply(Project project)
 	{
 		project.getPluginManager().apply(JavaPlugin.class);
+
+		project.getExtensions()
+		       .add("convertDyvilCompileToJavaExec", (Action<String>) taskName -> convertToJavaExec(project, taskName));
 
 		// configurations
 		project.getConfigurations().register("dyvilc", it -> {
@@ -188,5 +193,20 @@ class DyvilPlugin implements Plugin<Project>
 		sourceDirSet.srcDir(project.files(outputDir).builtBy(taskName));
 
 		project.getTasks().named(sourceSet.getCompileTaskName(languageName), it -> it.dependsOn(taskName));
+	}
+
+	private static void convertToJavaExec(Project project, String taskName)
+	{
+		final String newTaskName = taskName + "2";
+
+		project.getTasks().named(taskName, DyvilCompileTask.class, it -> {
+			it.setEnabled(false);
+			it.dependsOn(newTaskName);
+		});
+
+		project.getTasks().register(newTaskName, JavaExec.class, exec -> {
+			final DyvilCompileTask dyvilCompile = (DyvilCompileTask) project.getTasks().getByName(taskName);
+			dyvilCompile.copyTo(exec);
+		});
 	}
 }

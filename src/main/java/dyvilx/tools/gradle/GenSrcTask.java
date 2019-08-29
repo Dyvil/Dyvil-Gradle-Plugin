@@ -4,6 +4,7 @@ import org.gradle.api.NonNullApi;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.process.JavaExecSpec;
 
@@ -60,14 +61,22 @@ public class GenSrcTask extends DyvilCompileTask
 	// =============== Methods ===============
 
 	@Override
-	protected void configure(JavaExecSpec spec)
+	public void copyTo(JavaExecSpec spec)
 	{
-		super.configure(spec);
+		super.copyTo(spec);
 
 		spec.setMain(DyvilPlugin.GENSRC_MAIN);
 
 		spec.args("--output-dir=" + this.getClassDestinationDir());
 		spec.args("--gensrc-dir=" + this.getDestinationDir());
 		spec.args("test"); // TODO maybe run using gradle
+	}
+
+	@Override
+	public void copyTo(JavaExec exec)
+	{
+		super.copyTo(exec);
+
+		exec.getOutputs().dir(this.getClassDestinationDir());
 	}
 }

@@ -54,6 +54,7 @@ public class DyvilCompileTask extends AbstractCompile
 		}
 	}
 
+	@Internal
 	protected PatternFilterable getPatternSet()
 	{
 		try
@@ -118,10 +119,10 @@ public class DyvilCompileTask extends AbstractCompile
 	@TaskAction
 	protected void compile()
 	{
-		this.getProject().javaexec(this::configure);
+		this.getProject().javaexec(this::copyTo);
 	}
 
-	protected void configure(JavaExecSpec spec)
+	public void copyTo(JavaExecSpec spec)
 	{
 		spec.setClasspath(this.getDyvilcClasspath());
 		spec.setMain(DyvilPlugin.DYVILC_MAIN);
@@ -151,5 +152,14 @@ public class DyvilCompileTask extends AbstractCompile
 		}
 
 		spec.args("compile", "--ansi", "--marker-style=machine");
+	}
+
+	public void copyTo(JavaExec exec)
+	{
+		this.copyTo((JavaExecSpec) exec);
+
+		exec.getInputs().files(this.getSource());
+		exec.getInputs().file(this.getClasspath());
+		exec.getOutputs().dir(this.getDestinationDir());
 	}
 }
