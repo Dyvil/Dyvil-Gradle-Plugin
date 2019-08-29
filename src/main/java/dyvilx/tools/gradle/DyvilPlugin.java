@@ -180,6 +180,7 @@ class DyvilPlugin implements Plugin<Project>
 			it.setClasspath(gensrc);
 			it.setDyvilcClasspath(gensrc);
 
+			it.setClassDestinationDir(project.file(it.getTemporaryDir() + "/classes"));
 			it.setDestinationDir(outputDir);
 			it.setSource(sourceDirSet);
 		});
