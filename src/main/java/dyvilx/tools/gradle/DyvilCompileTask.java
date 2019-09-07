@@ -8,7 +8,6 @@ import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.util.PatternFilterable;
 import org.gradle.process.JavaExecSpec;
-import org.gradle.util.RelativePathUtil;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -129,26 +128,21 @@ public class DyvilCompileTask extends AbstractCompile
 
 		spec.args(this.getExtraArgs());
 
-		final String pathSeparator = File.pathSeparator;
-		final File workingDir = spec.getWorkingDir();
-
-		spec.args("--source-dirs=" + this.sourceDirs.getSrcDirs().stream()
-		                                            .map(f -> RelativePathUtil.relativePath(workingDir, f))
-		                                            .collect(Collectors.joining(pathSeparator)));
+		spec.args("--source-dirs=" + this.sourceDirs.getSrcDirs().stream().map(File::getPath)
+		                                            .collect(Collectors.joining(File.pathSeparator)));
 		spec.args("--output-dir=" + this.getDestinationDir());
-		spec.args("--classpath=" + this.getClasspath().getFiles().stream().map(File::getPath)
-		                               .collect(Collectors.joining(pathSeparator)));
+		spec.args("--classpath=" + this.getClasspath().getAsPath());
 
 		final PatternFilterable filter = this.getPatternSet();
 		final Set<String> includes = filter.getIncludes();
 		final Set<String> excludes = filter.getExcludes();
 		if (!includes.isEmpty())
 		{
-			spec.args("--include-patterns=" + String.join(pathSeparator, includes));
+			spec.args("--include-patterns=" + String.join(File.pathSeparator, includes));
 		}
 		if (!excludes.isEmpty())
 		{
-			spec.args("--exclude-patterns=" + String.join(pathSeparator, excludes));
+			spec.args("--exclude-patterns=" + String.join(File.pathSeparator, excludes));
 		}
 
 		spec.args("compile", "--ansi", "--marker-style=machine");
