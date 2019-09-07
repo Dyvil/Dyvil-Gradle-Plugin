@@ -4,8 +4,10 @@ import org.gradle.api.NonNullApi;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.compile.AbstractCompile;
+import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.util.PatternFilterable;
 import org.gradle.process.JavaExecSpec;
 
@@ -26,9 +28,24 @@ public class DyvilCompileTask extends AbstractCompile
 
 	protected SourceDirectorySet sourceDirs;
 
+	private final CompileOptions compileOptions;
+
 	private List<String> extraArgs = new ArrayList<>();
 
+	// =============== Constructors ===============
+
+	public DyvilCompileTask()
+	{
+		this.compileOptions = this.getServices().get(ObjectFactory.class).newInstance(CompileOptions.class);
+	}
+
 	// =============== Properties ===============
+
+	@Nested
+	public CompileOptions getOptions()
+	{
+		return this.compileOptions;
+	}
 
 	@Override
 	@InputFiles
