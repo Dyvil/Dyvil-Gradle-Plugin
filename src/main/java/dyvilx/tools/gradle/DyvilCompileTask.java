@@ -131,7 +131,6 @@ public class DyvilCompileTask extends AbstractCompile
 
 	// =============== Methods ===============
 
-	@Override
 	@TaskAction
 	protected void compile()
 	{
