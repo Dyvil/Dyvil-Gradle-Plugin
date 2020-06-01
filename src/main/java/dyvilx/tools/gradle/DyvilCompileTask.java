@@ -141,6 +141,8 @@ public class DyvilCompileTask extends AbstractCompile
 		spec.args("--output-dir=" + this.getDestinationDir());
 		spec.args("--classpath=" + this.getClasspath().getAsPath());
 
+		spec.setDefaultCharacterEncoding(this.compileOptions.getEncoding());
+
 		final PatternFilterable filter = this.getPatternSet();
 		final Set<String> includes = filter.getIncludes();
 		final Set<String> excludes = filter.getExcludes();
