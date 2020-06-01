@@ -13,10 +13,7 @@ import org.gradle.process.JavaExecSpec;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @NonNullApi
@@ -29,8 +26,6 @@ public class DyvilCompileTask extends AbstractCompile
 	protected SourceDirectorySet sourceDirs;
 
 	private final CompileOptions compileOptions;
-
-	private List<String> extraArgs = new ArrayList<>();
 
 	// =============== Constructors ===============
 
@@ -104,28 +99,25 @@ public class DyvilCompileTask extends AbstractCompile
 	@Input
 	public List<String> getExtraArgs()
 	{
-		return this.extraArgs;
+		return this.compileOptions.getCompilerArgs();
 	}
 
 	public void setExtraArgs(List<String> extraArgs)
 	{
 		Objects.requireNonNull(extraArgs);
-		this.extraArgs = extraArgs;
+		this.compileOptions.setCompilerArgs(extraArgs);
 	}
 
 	public void extraArgs(Object... extraArgs)
 	{
-		for (final Object extraArg : extraArgs)
-		{
-			this.extraArgs.add(extraArg.toString());
-		}
+		this.extraArgs(Arrays.asList(extraArgs));
 	}
 
 	public void extraArgs(Iterable<?> extraArgs)
 	{
 		for (final Object extraArg : extraArgs)
 		{
-			this.extraArgs.add(extraArg.toString());
+			this.compileOptions.getCompilerArgs().add(String.valueOf(extraArg));
 		}
 	}
 
