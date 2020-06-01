@@ -8,9 +8,9 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.dyvil', name: 'library', version: '0.46.0'
-	dyvilc group: 'org.dyvil', name: 'compiler', version: '0.46.3'
-	gensrc group: 'org.dyvil', name: 'gensrc', version: '0.10.1'
+	compile group: 'org.dyvil', name: 'library', version: '0.47.0'
+	dyvilc group: 'org.dyvil', name: 'compiler', version: '0.47.2'
+	gensrc group: 'org.dyvil', name: 'gensrc', version: '0.11.2'
 
 	// https://mvnrepository.com/artifact/junit/junit
 	testCompile group: 'junit', name: 'junit', version: '4.12'
