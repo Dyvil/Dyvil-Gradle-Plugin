@@ -24,3 +24,11 @@
 * Bumped minimum Dyvil Compiler version to v0.46.3.
 * Bumped minimum GenSrc version to v0.10.1.
 * Fixed GenSrc tasks not processing `*.dgs` files.
+
+# Dyvil Gradle Plugin v0.5.0
+
+* Source paths passed to the compiler are now absolute, causing markers in the output to use absolute paths, too.
+* Dyvil source files are now excluded from resources.
+* Dyvil and GenSrc compile tasks now support the `options` property, a standard container for various compilation options.
+  * The tasks now respect the encoding specified in `options.encoding`.
+  * Support for more options will be added later.
