@@ -48,8 +48,11 @@ public class GenSrcTask extends DyvilCompileTask
 		if (source instanceof SourceDirectorySet)
 		{
 			final SourceDirectorySet sourceDirectorySet = (SourceDirectorySet) source;
-			super.setSource((Object) this.getProject().files(sourceDirectorySet.getSrcDirs()).getAsFileTree()
-			                             .matching(this.getPatternSet()));
+			super.setSource((Object) this
+				.getProject()
+				.files(sourceDirectorySet.getSrcDirs())
+				.getAsFileTree()
+				.matching(this.getPatternSet()));
 			this.sourceDirs = sourceDirectorySet;
 		}
 		else

@@ -27,8 +27,9 @@ class DyvilPlugin implements Plugin<Project>
 	{
 		project.getPluginManager().apply(JavaPlugin.class);
 
-		project.getExtensions()
-		       .add("convertDyvilCompileToJavaExec", (Action<String>) taskName -> convertToJavaExec(project, taskName));
+		project
+			.getExtensions()
+			.add("convertDyvilCompileToJavaExec", (Action<String>) taskName -> convertToJavaExec(project, taskName));
 
 		// configurations
 		project.getConfigurations().register("dyvilc", it -> {
@@ -75,9 +76,10 @@ class DyvilPlugin implements Plugin<Project>
 
 			if (major == 0 && (minor < 46 || minor == 46 && patch < 3))
 			{
-				details.because(
-					"Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin")
-				       .useVersion("0.46.3");
+				details
+					.because(
+						"Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin")
+					.useVersion("0.46.3");
 			}
 		}
 		catch (Exception ignored)
@@ -112,9 +114,10 @@ class DyvilPlugin implements Plugin<Project>
 
 			if (major == 0 && (minor < 10 || minor == 10 && patch < 1))
 			{
-				details.because(
-					"GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin")
-				       .useVersion("0.10.1");
+				details
+					.because(
+						"GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin")
+					.useVersion("0.10.1");
 			}
 		}
 		catch (Exception ignored)

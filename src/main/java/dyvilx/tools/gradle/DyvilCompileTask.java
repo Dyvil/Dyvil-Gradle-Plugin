@@ -13,7 +13,10 @@ import org.gradle.process.JavaExecSpec;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @NonNullApi
@@ -136,8 +139,11 @@ public class DyvilCompileTask extends AbstractCompile
 
 		spec.args(this.getExtraArgs());
 
-		spec.args("--source-dirs=" + this.sourceDirs.getSrcDirs().stream().map(File::getPath)
-		                                            .collect(Collectors.joining(File.pathSeparator)));
+		spec.args("--source-dirs=" + this.sourceDirs
+			.getSrcDirs()
+			.stream()
+			.map(File::getPath)
+			.collect(Collectors.joining(File.pathSeparator)));
 		spec.args("--output-dir=" + this.getDestinationDir());
 		spec.args("--classpath=" + this.getClasspath().getAsPath());
 
