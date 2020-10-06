@@ -20,7 +20,7 @@ To enable the plugin, add the following line to the `plugins` DSL block of your 
 ```groovy
 plugins {
 	// ...
-	id 'org.dyvil.dyvil-gradle' version '0.3.0'
+	id 'org.dyvil.dyvil-gradle' version '0.5.0'
 }
 ```
 
@@ -41,10 +41,10 @@ dependencies {
 	// ...
 
 	// https://mvnrepository.com/artifact/org.dyvil/compiler
-	dyvilc group: 'org.dyvil', name: 'compiler', version: 'setme'
+	dyvilc group: 'org.dyvil', name: 'compiler', version: '???'
 
 	// https://mvnrepository.com/artifact/org.dyvil/gensrc
-	gensrc group: 'org.dyvil', name: 'gensrc', version: 'setme'
+	gensrc group: 'org.dyvil', name: 'gensrc', version: '???'
 	
 	// ...
 }
