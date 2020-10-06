@@ -10,10 +10,15 @@ class FooTest {
 	}
 
 	@Test func getABC() {
-		let bar = new Bar
-		Assert.assertEquals("A", bar.getA())
-		Assert.assertEquals("B", bar.getB())
-		Assert.assertEquals("C", bar.getC())
+		let bar1 = new Bar1
+		Assert.assertEquals("1 A", bar1.getA())
+		Assert.assertEquals("1 B", bar1.getB())
+		Assert.assertEquals("1 C", bar1.getC())
+
+		let bar2 = new Bar2
+		Assert.assertEquals("2 A", bar2.getA())
+		Assert.assertEquals("2 B", bar2.getB())
+		Assert.assertEquals("2 C", bar2.getC())
 	}
 
 	@Test func getDEF() {

@@ -23,6 +23,8 @@ class FunctionalTest extends Specification {
 			'settings.gradle',
 			'src/main/dyvil/org/example/Foo.dyv',
 			'src/main/dyvil/org/example/Bar.dyv.dgt',
+			'src/main/dyvil/org/example/Bar.dyv-1.dgs',
+			'src/main/dyvil/org/example/Bar.dyv-2.dgs',
 			'src/main/java/org/example/Jav.java.dgt',
 			'src/test/dyvil/org/example/FooTest.dyv',
 	]
@@ -74,13 +76,17 @@ class FunctionalTest extends Specification {
 
 		def mainOutputDir = new File(testProjectDir.root, 'build/classes/dyvil/main/')
 		new File(mainOutputDir, 'org/example/Foo.class').exists()
-		new File(mainOutputDir, 'org/example/Bar.class').exists()
+		new File(mainOutputDir, 'org/example/Bar1.class').exists()
+		new File(mainOutputDir, 'org/example/Bar2.class').exists()
 
 		def testOutputDir = new File(testProjectDir.root, 'build/classes/dyvil/test/')
 		new File(testOutputDir, 'org/example/FooTest.class').exists()
 
 		def gensrcOutputDir = new File(testProjectDir.root, 'build/generated/sources/gensrc/main/dyvil/')
-		new File(gensrcOutputDir, 'org/example/Bar.dyv').exists()
+		new File(gensrcOutputDir, 'org/example/Bar1.dyv').exists()
+		new File(gensrcOutputDir, 'org/example/Bar2.dyv').exists()
+
+		new File(testProjectDir.root, 'build/generated/sources/gensrc/main/java/org/example/Jav.java').exists()
 
 		new File(testProjectDir.root, 'build/reports/tests/test/classes/org.example.FooTest.html').exists()
 	}

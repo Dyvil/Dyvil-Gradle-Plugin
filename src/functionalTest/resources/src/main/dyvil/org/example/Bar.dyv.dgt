@@ -1,7 +1,9 @@
+#let(NUMBER = spec['NUMBER'])
+
 package org.example
 
-class Bar {
+class Bar#(NUMBER){} {
 	#for(S <- [ "A", "B", "C" ]) {
-		func get#(S)() -> String = "S"
+		func get#(S)() -> String = "NUMBER S"
 	}
 }
