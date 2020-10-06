@@ -66,8 +66,8 @@ class DyvilPlugin implements Plugin<Project>
 
 	private void checkGenSrcVersion(DependencyResolveDetails details)
 	{
-		this.checkVersion(details, "org.dyvil", "gensrc", "0.10.1",
-		                  "GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin",
+		this.checkVersion(details, "org.dyvil", "gensrc", "0.12.0",
+		                  "GenSrc versions before 0.12.0 do not support the command-line syntax required by the plugin",
 		                  (major, minor, patch) -> major > 0 || minor > 10 || minor == 10 && patch >= 1);
 	}
 
