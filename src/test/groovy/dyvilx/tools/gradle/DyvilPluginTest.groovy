@@ -42,6 +42,10 @@ class DyvilPluginTest {
 		assertThat(project.tasks.compileTestJavaGenSrc, notNullValue())
 		assertThat(project.tasks.compileDyvilGenSrc, notNullValue())
 		assertThat(project.tasks.compileTestDyvilGenSrc, notNullValue())
+		assertThat(project.tasks.generateJavaGenSrc, notNullValue())
+		assertThat(project.tasks.generateTestJavaGenSrc, notNullValue())
+		assertThat(project.tasks.generateDyvilGenSrc, notNullValue())
+		assertThat(project.tasks.generateTestDyvilGenSrc, notNullValue())
 	}
 
 	@Test
@@ -49,9 +53,9 @@ class DyvilPluginTest {
 		assertThat(project.tasks.classes.dependsOn, hasItem('compileDyvil'))
 		assertThat(project.tasks.testClasses.dependsOn, hasItem('compileTestDyvil'))
 
-		assertThat(project.tasks.compileJava.dependsOn, hasItem('compileJavaGenSrc'))
-		assertThat(project.tasks.compileTestJava.dependsOn, hasItem('compileTestJavaGenSrc'))
-		assertThat(project.tasks.compileDyvil.dependsOn, hasItem('compileDyvilGenSrc'))
-		assertThat(project.tasks.compileTestDyvil.dependsOn, hasItem('compileTestDyvilGenSrc'))
+		assertThat(project.tasks.compileJava.dependsOn, hasItem('generateJavaGenSrc'))
+		assertThat(project.tasks.compileTestJava.dependsOn, hasItem('generateTestJavaGenSrc'))
+		assertThat(project.tasks.compileDyvil.dependsOn, hasItem('generateDyvilGenSrc'))
+		assertThat(project.tasks.compileTestDyvil.dependsOn, hasItem('generateTestDyvilGenSrc'))
 	}
 }

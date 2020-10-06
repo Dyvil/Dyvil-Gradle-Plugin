@@ -6,6 +6,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencyResolveDetails;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.plugins.JavaPlugin;
@@ -171,25 +172,43 @@ class DyvilPlugin implements Plugin<Project>
 	private static void configureGenSrc(Project project, SourceSet sourceSet, SourceDirectorySet sourceDirSet)
 	{
 		final String languageName = sourceDirSet.getName();
-		final String taskName = sourceSet.getCompileTaskName(languageName + "GenSrc");
-		final File outputDir = project.file(
-			project.getBuildDir() + "/generated-src/gensrc/" + sourceSet.getName() + "/" + languageName);
+		final String sourceSetName = sourceSet.getName();
+		final String compileTaskName = sourceSet.getCompileTaskName(languageName + "GenSrc");
 
-		project.getTasks().register(taskName, GenSrcTask.class, it -> {
-			it.setDescription("Processes the " + sourceSet.getName() + " GenSrc files.");
+		final File classesDir = project.file(
+			project.getBuildDir() + "/classes/gensrc-" + sourceSetName + "/" + languageName);
+		final File outputDir = project.file(
+			project.getBuildDir() + "/generated/sources/gensrc/" + sourceSetName + "/" + languageName);
+
+		project.getTasks().register(compileTaskName, GenSrcCompileTask.class, it -> {
+			it.setDescription("Compiles the " + sourceSetName + " GenSrc files.");
 
 			final Configuration gensrc = project.getConfigurations().getByName("gensrc");
 			it.setClasspath(gensrc);
 			it.setDyvilcClasspath(gensrc);
 
-			it.setClassDestinationDir(project.file(it.getTemporaryDir() + "/classes"));
-			it.setDestinationDir(outputDir);
+			it.setDestinationDir(classesDir);
 			it.setSource(sourceDirSet);
 		});
 
-		sourceDirSet.srcDir(project.files(outputDir).builtBy(taskName));
+		final ConfigurableFileCollection classFiles = project.files(classesDir).builtBy(compileTaskName);
 
-		project.getTasks().named(sourceSet.getCompileTaskName(languageName), it -> it.dependsOn(taskName));
+		final String runTaskName = sourceSet.getTaskName("generate", languageName + "GenSrc");
+		project.getTasks().register(runTaskName, GenSrcRunTask.class, it -> {
+			it.dependsOn(compileTaskName);
+			it.setDescription("Generates the " + sourceSetName + " source files using GenSrc.");
+
+			final Configuration gensrc = project.getConfigurations().getByName("gensrc");
+			it.setClasspath(classFiles.plus(gensrc));
+
+			it.setSourceDirs(sourceDirSet);
+			it.setOutputDir(outputDir);
+		});
+
+		final ConfigurableFileCollection outputFiles = project.files(outputDir);
+		sourceDirSet.srcDir(outputFiles);
+
+		project.getTasks().named(sourceSet.getCompileTaskName(languageName), it -> it.dependsOn(runTaskName));
 	}
 
 	private static void convertToJavaExec(Project project, String taskName)
