@@ -55,46 +55,29 @@ class DyvilPlugin implements Plugin<Project>
 
 	private void checkCompilerVersion(DependencyResolveDetails details)
 	{
-		if (!"org.dyvil".equals(details.getRequested().getGroup()) //
-		    || !"compiler".equals(details.getRequested().getName()))
-		{
-			return;
-		}
-
-		final String version = details.getRequested().getVersion();
-		if (version == null)
-		{
-			details.because("latest version").useVersion("+");
-			return;
-		}
-
-		final String[] split = version.split("\\.");
-		try
-		{
-			final int major = Integer.parseInt(split[0]);
-			final int minor = Integer.parseInt(split[1]);
-			final int patch = Integer.parseInt(split[2]);
-
-			if (major == 0 && (minor < 46 || minor == 46 && patch < 3))
-			{
-				details
-					.because(
-						"Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin")
-					.useVersion("0.46.3");
-			}
-		}
-		catch (Exception ignored)
-		{
-			// invalid version notation, let gradle handle it.
-		}
+		this.checkVersion(details, "org.dyvil", "compiler", "0.46.3",
+		                  "Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin",
+		                  (major, minor, patch) -> major > 0 || minor > 46 || minor == 46 && patch >= 3);
 	}
 
 	private void checkGenSrcVersion(DependencyResolveDetails details)
 	{
+		this.checkVersion(details, "org.dyvil", "gensrc", "0.10.1",
+		                  "GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin",
+		                  (major, minor, patch) -> major > 0 || minor > 10 || minor == 10 && patch >= 1);
+	}
+
+	interface VersionPredicate
+	{
+		boolean test(int major, int minor, int patch);
+	}
+
+	private void checkVersion(DependencyResolveDetails details, String group, String module, String replacementVersion,
+		String reason, VersionPredicate predicate)
+	{
 		this.checkCompilerVersion(details);
 
-		if (!"org.dyvil".equals(details.getRequested().getGroup()) //
-		    || !"gensrc".equals(details.getRequested().getName()))
+		if (!group.equals(details.getRequested().getGroup()) || !module.equals(details.getRequested().getName()))
 		{
 			return;
 		}
@@ -113,12 +96,9 @@ class DyvilPlugin implements Plugin<Project>
 			final int minor = Integer.parseInt(split[1]);
 			final int patch = Integer.parseInt(split[2]);
 
-			if (major == 0 && (minor < 10 || minor == 10 && patch < 1))
+			if (!predicate.test(major, minor, patch))
 			{
-				details
-					.because(
-						"GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin")
-					.useVersion("0.10.1");
+				details.because(reason).useVersion(replacementVersion);
 			}
 		}
 		catch (Exception ignored)
