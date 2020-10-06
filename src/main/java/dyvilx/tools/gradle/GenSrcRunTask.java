@@ -24,7 +24,7 @@ public class GenSrcRunTask extends JavaExec
 	{
 		final List<String> args = new ArrayList<>();
 
-		for (final File sourceDir : this.getSourceDirs())
+		for (final File sourceDir : this.getSourceDirs().getSrcDirs())
 		{
 			args.add("--source-dir=" + sourceDir);
 		}
