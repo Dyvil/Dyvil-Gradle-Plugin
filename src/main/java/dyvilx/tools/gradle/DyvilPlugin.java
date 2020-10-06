@@ -6,6 +6,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencyResolveDetails;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.plugins.JavaPlugin;
@@ -16,11 +17,15 @@ import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class DyvilPlugin implements Plugin<Project>
 {
 	public static final String DYVILC_MAIN = "dyvilx.tools.compiler.Main";
 	public static final String GENSRC_MAIN = "dyvilx.tools.gensrc.Main";
+
+	private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)");
 
 	@Override
 	public void apply(Project project)
@@ -54,46 +59,27 @@ class DyvilPlugin implements Plugin<Project>
 
 	private void checkCompilerVersion(DependencyResolveDetails details)
 	{
-		if (!"org.dyvil".equals(details.getRequested().getGroup()) //
-		    || !"compiler".equals(details.getRequested().getName()))
-		{
-			return;
-		}
-
-		final String version = details.getRequested().getVersion();
-		if (version == null)
-		{
-			details.because("latest version").useVersion("+");
-			return;
-		}
-
-		final String[] split = version.split("\\.");
-		try
-		{
-			final int major = Integer.parseInt(split[0]);
-			final int minor = Integer.parseInt(split[1]);
-			final int patch = Integer.parseInt(split[2]);
-
-			if (major == 0 && (minor < 46 || minor == 46 && patch < 3))
-			{
-				details
-					.because(
-						"Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin")
-					.useVersion("0.46.3");
-			}
-		}
-		catch (Exception ignored)
-		{
-			// invalid version notation, let gradle handle it.
-		}
+		this.checkVersion(details, "org.dyvil", "compiler", "0.46.3",
+		                  "Dyvil Compiler versions before 0.46.3 do not support the command-line syntax required by the plugin",
+		                  (major, minor, patch) -> major > 0 || minor > 46 || minor == 46 && patch >= 3);
 	}
 
 	private void checkGenSrcVersion(DependencyResolveDetails details)
 	{
-		this.checkCompilerVersion(details);
+		this.checkVersion(details, "org.dyvil", "gensrc", "0.12.0",
+		                  "GenSrc versions before 0.12.0 do not support the command-line syntax required by the plugin",
+		                  (major, minor, patch) -> major > 0 || minor > 10 || minor == 10 && patch >= 1);
+	}
 
-		if (!"org.dyvil".equals(details.getRequested().getGroup()) //
-		    || !"gensrc".equals(details.getRequested().getName()))
+	interface VersionPredicate
+	{
+		boolean test(int major, int minor, int patch);
+	}
+
+	private void checkVersion(DependencyResolveDetails details, String group, String module, String replacementVersion,
+		String reason, VersionPredicate predicate)
+	{
+		if (!group.equals(details.getRequested().getGroup()) || !module.equals(details.getRequested().getName()))
 		{
 			return;
 		}
@@ -105,19 +91,21 @@ class DyvilPlugin implements Plugin<Project>
 			return;
 		}
 
-		final String[] split = version.split("\\.");
+		final Matcher matcher = VERSION_PATTERN.matcher(version);
+		if (!matcher.find())
+		{
+			return;
+		}
+
 		try
 		{
-			final int major = Integer.parseInt(split[0]);
-			final int minor = Integer.parseInt(split[1]);
-			final int patch = Integer.parseInt(split[2]);
+			final int major = Integer.parseInt(matcher.group(1));
+			final int minor = Integer.parseInt(matcher.group(2));
+			final int patch = Integer.parseInt(matcher.group(3));
 
-			if (major == 0 && (minor < 10 || minor == 10 && patch < 1))
+			if (!predicate.test(major, minor, patch))
 			{
-				details
-					.because(
-						"GenSrc versions before 0.10.1 do not support the command-line syntax required by the plugin")
-					.useVersion("0.10.1");
+				details.because(reason).useVersion(replacementVersion);
 			}
 		}
 		catch (Exception ignored)
@@ -171,25 +159,43 @@ class DyvilPlugin implements Plugin<Project>
 	private static void configureGenSrc(Project project, SourceSet sourceSet, SourceDirectorySet sourceDirSet)
 	{
 		final String languageName = sourceDirSet.getName();
-		final String taskName = sourceSet.getCompileTaskName(languageName + "GenSrc");
-		final File outputDir = project.file(
-			project.getBuildDir() + "/generated-src/gensrc/" + sourceSet.getName() + "/" + languageName);
+		final String sourceSetName = sourceSet.getName();
+		final String compileTaskName = sourceSet.getCompileTaskName(languageName + "GenSrc");
 
-		project.getTasks().register(taskName, GenSrcTask.class, it -> {
-			it.setDescription("Processes the " + sourceSet.getName() + " GenSrc files.");
+		final File classesDir = project.file(
+			project.getBuildDir() + "/classes/gensrc-" + sourceSetName + "/" + languageName);
+		final File outputDir = project.file(
+			project.getBuildDir() + "/generated/sources/gensrc/" + sourceSetName + "/" + languageName);
+
+		project.getTasks().register(compileTaskName, GenSrcCompileTask.class, it -> {
+			it.setDescription("Compiles the " + sourceSetName + " GenSrc files.");
 
 			final Configuration gensrc = project.getConfigurations().getByName("gensrc");
 			it.setClasspath(gensrc);
 			it.setDyvilcClasspath(gensrc);
 
-			it.setClassDestinationDir(project.file(it.getTemporaryDir() + "/classes"));
-			it.setDestinationDir(outputDir);
+			it.setDestinationDir(classesDir);
 			it.setSource(sourceDirSet);
 		});
 
-		sourceDirSet.srcDir(project.files(outputDir).builtBy(taskName));
+		final ConfigurableFileCollection classFiles = project.files(classesDir).builtBy(compileTaskName);
 
-		project.getTasks().named(sourceSet.getCompileTaskName(languageName), it -> it.dependsOn(taskName));
+		final String runTaskName = sourceSet.getTaskName("generate", languageName + "GenSrc");
+		project.getTasks().register(runTaskName, GenSrcRunTask.class, it -> {
+			it.dependsOn(compileTaskName);
+			it.setDescription("Generates the " + sourceSetName + " source files using GenSrc.");
+
+			final Configuration gensrc = project.getConfigurations().getByName("gensrc");
+			it.setClasspath(classFiles.plus(gensrc));
+
+			it.setSourceDirs(sourceDirSet);
+			it.setOutputDir(outputDir);
+		});
+
+		final ConfigurableFileCollection outputFiles = project.files(outputDir);
+		sourceDirSet.srcDir(outputFiles);
+
+		project.getTasks().named(sourceSet.getCompileTaskName(languageName), it -> it.dependsOn(runTaskName));
 	}
 
 	private static void convertToJavaExec(Project project, String taskName)

@@ -79,7 +79,7 @@ class FunctionalTest extends Specification {
 		def testOutputDir = new File(testProjectDir.root, 'build/classes/dyvil/test/')
 		new File(testOutputDir, 'org/example/FooTest.class').exists()
 
-		def gensrcOutputDir = new File(testProjectDir.root, 'build/generated-src/gensrc/main/dyvil/')
+		def gensrcOutputDir = new File(testProjectDir.root, 'build/generated/sources/gensrc/main/dyvil/')
 		new File(gensrcOutputDir, 'org/example/Bar.dyv').exists()
 
 		new File(testProjectDir.root, 'build/reports/tests/test/classes/org.example.FooTest.html').exists()
