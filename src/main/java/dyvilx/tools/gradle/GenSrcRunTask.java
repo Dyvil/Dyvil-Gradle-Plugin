@@ -83,6 +83,7 @@ public class GenSrcRunTask extends JavaExec
 		return this.getAllSource().matching(it -> it.include("**/*.dgt", "**/*.dgs"));
 	}
 
+	@Internal
 	public SourceDirectorySet getSourceDirs()
 	{
 		return sourceDirs;
