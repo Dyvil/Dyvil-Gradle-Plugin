@@ -163,7 +163,7 @@ class DyvilPlugin implements Plugin<Project>
 		final String compileTaskName = sourceSet.getCompileTaskName(languageName + "GenSrc");
 
 		final File classesDir = project.file(
-			project.getBuildDir() + "/classes/gensrc-" + sourceSetName + "/" + languageName);
+			project.getBuildDir() + "/classes/gensrc/" + languageName + "/" + sourceSetName);
 		final File outputDir = project.file(
 			project.getBuildDir() + "/generated/sources/gensrc/" + sourceSetName + "/" + languageName);
 
