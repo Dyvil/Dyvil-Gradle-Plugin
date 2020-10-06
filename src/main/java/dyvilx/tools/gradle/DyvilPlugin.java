@@ -79,8 +79,6 @@ class DyvilPlugin implements Plugin<Project>
 	private void checkVersion(DependencyResolveDetails details, String group, String module, String replacementVersion,
 		String reason, VersionPredicate predicate)
 	{
-		this.checkCompilerVersion(details);
-
 		if (!group.equals(details.getRequested().getGroup()) || !module.equals(details.getRequested().getName()))
 		{
 			return;
