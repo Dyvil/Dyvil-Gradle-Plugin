@@ -17,11 +17,15 @@ import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class DyvilPlugin implements Plugin<Project>
 {
 	public static final String DYVILC_MAIN = "dyvilx.tools.compiler.Main";
 	public static final String GENSRC_MAIN = "dyvilx.tools.gensrc.Main";
+
+	private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)");
 
 	@Override
 	public void apply(Project project)
@@ -89,12 +93,17 @@ class DyvilPlugin implements Plugin<Project>
 			return;
 		}
 
-		final String[] split = version.split("\\.");
+		final Matcher matcher = VERSION_PATTERN.matcher(version);
+		if (!matcher.find())
+		{
+			return;
+		}
+
 		try
 		{
-			final int major = Integer.parseInt(split[0]);
-			final int minor = Integer.parseInt(split[1]);
-			final int patch = Integer.parseInt(split[2]);
+			final int major = Integer.parseInt(matcher.group(1));
+			final int minor = Integer.parseInt(matcher.group(2));
+			final int patch = Integer.parseInt(matcher.group(3));
 
 			if (!predicate.test(major, minor, patch))
 			{
